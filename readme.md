@@ -1,92 +1,135 @@
-# JavaSysMonitor
-Small Java SpringBoot REST API service that collects system info.
 
-This is created for personal use with Homepage Custom API widget.
+```markdown
+# 🖥️ System Metrics Monitor - Spring Boot
 
->  https://gethomepage.dev/latest/widgets/services/customapi/
+This is a Spring Boot application that exposes system metrics such as CPU load, memory usage, disk usage, uptime, OS information, and more. It leverages [oshi](https://github.com/oshi/oshi) to gather system data and provides it as a RESTful API.
 
+> 🔗 [Project Repository](https://github.com/mahingaRodin/springBoot-sysmonitor)
 
-Example how it looks - three large boxes named PROXVM-SRV:
-![Proxmox Custom API widgets](https://preview.redd.it/my-homepage-dashbord-with-few-services-and-custom-written-v0-bcqtb2xcxrxc1.jpeg?width=1080&crop=smart&auto=webp&s=573a41d3f9e26c1a5acbb302b5c624378481e580 "Proxmox Custom API widgets")
+---
 
-
-### Requirements for building:
-- Java 17
-- Gradle 8.7
-- SpringBoot 3.2.5
-
-### Requirements for running:
-- Java 17
-- df package on Linux for getting disk info
-
-### Endpoints
->  ```metrics``` - http://IP_ADDRESS:9314/metrics
-
->  Optional parameter ```id``` - http://IP_ADDRESS:9314/metrics?id=test
-
-This endpoint returns:
-- cpuLoad
-- usedMemory
-- totalMemory
-- freeMemory
-- disks
-    - name
-    - totalSpace
-    - freeSpace
-- osName
-- osVersion
-- osArch,
-- cpuName
-- mboName
-- upTime
-
-Port can be changed in ```application.properties```.
-
-Optional parameter ```id``` can be used to further separate and identify callers that are calling this endpoint.
-It's not required, and it doesn't affect response.
-
-Example response:
+## 📦 Project Structure
 
 ```
+
+com.sys.monitor
+├── controllers/
+│   └── DataController.java      # Handles HTTP requests for system metrics
+├── models/
+│   ├── System.java              # Represents system metrics data model
+│   └── Disk.java                # Represents disk usage model
+├── service/
+│   └── SysService.java          # Fetches and processes system metrics
+└── repository/
+└── SysRepo.java             # Stores the system metrics temporarily
+
+```
+
+---
+
+## 🚀 Getting Started
+
+### ✅ Prerequisites
+
+- Java 17+
+- Maven or Gradle
+- Spring Boot 3.x
+- Linux (for extended disk metrics using `df -h`)
+- OSHI dependency (`oshi-core`)
+
+---
+
+## 🧪 API Testing with Postman
+
+### Endpoint: `GET /os-metrics`
+
+#### Description:
+Fetches the real-time system metrics including memory, CPU load, disk space, OS info, etc.
+
+#### Optional Query Parameter:
+
+| Parameter | Type   | Default | Description               |
+|-----------|--------|---------|---------------------------|
+| `id`      | String | `noId`  | An optional identifier ID |
+
+#### Sample Request:
+```
+
+GET [http://localhost:8080/os-metrics?id=student-PC](http://localhost:8080/os-metrics?id=student-PC)
+
+````
+
+#### Response (Sample):
+```json
 {
-    "cpuLoad": "0,00 %",
-    "usedMemory": "7,45 GB",
-    "totalMemory": "7,91 GB",
-    "freeMemory": "0,46 GB",
+    "cpuLoad": "0.00 %",
+    "usedMemory": "6.67 GB",
+    "totalMemory": "7.72 GB",
+    "freeMemory": "1.05 GB",
     "disks": [
         {
             "name": "C:\\",
-            "totalSpace": "222 GB",
-            "freeSpace": "28 GB"
-        },
-        {
-            "name": "D:\\",
-            "totalSpace": "0 GB",
-            "freeSpace": "0 GB"
+            "totalSpace": "653 GB",
+            "freeSpace": "214 GB"
         }
     ],
-    "osName": "Microsoft Windows 10 build 19045",
+    "osName": "Microsoft Windows 11 build 26100",
     "osVersion": "10.0",
     "osArch": "amd64",
-    "cpuName": "Intel(R) Core(TM) i3-6100 CPU @ 3.70GHz",
-    "mboName": "Dell Inc. - OptiPlex 3040",
-    "uptime": "00d:03h:11m:10s"
+    "cpuName": "12th Gen Intel(R) Core(TM) i7-1255U",
+    "mboName": "LENOVO - 21DH",
+    "uptime": "00d:03h:05m:37s"
 }
+````
+
+#### Testing Instructions:
+
+1. Open **Postman**.
+2. Create a **GET** request to: `http://localhost:{yourServletPort}/sysData/os-metrics`
+3. (Optional) Add a query param `id` with a value, e.g., `yourName-PC`
+4. Click **Send**.
+5. View the system metrics in the response body.
+
+---
+
+## 🧰 Tech Stack
+
+* **Java 17**
+* **Spring Boot 3**
+* **OSHI** – Operating System and Hardware Info
+* **SLF4J + Logback** – Logging
+* **Postman** – API testing
+
+---
+
+## 📁 Disk Metrics Notes
+
+* Disk metrics are collected using both Java's `File` class and Linux `df -h` command.
+* Only mount points starting with `/mnt` are included from `df -h`.
+* If running on **non-Linux OS**, `df` command results are skipped gracefully.
+
+---
+
+## 🧑‍💻 Author
+
+**Uwonkunda Mahinga Rodin**
+📧 [mahingarodin@gmail.com](mailto:mahingarodin@gmail.com)
+🔗 GitHub: [mahingaRodin](https://github.com/mahingaRodin)
+
+---
+
+## 📜 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+## ❤️ Contribution
+
+Contributions, issues, and feature requests are welcome!
+Feel free to fork the repo and submit a pull request.
+
 ```
 
-In the ```Homepage``` folder there is ```services.yaml``` example how to configure Custom API widget with this service.
-Change IP and port accordingly.
-
-
-### Running on Debian systems
-Example how to run on Debian in the background:
-> nohup java -jar JavaSysMonitor.war > JavaSysMonitor.log 2>&1 &
-
-Don't forget to rotate logs or restart service once in a while. Or if you don't need logging you can exclude that part
-from the command:
-
-> nohup java -jar JavaSysMonitor.war 2>&1 &
-
-### Other
-Potentially this service can be used for getting system information of other PCs (Windows, macOS (not tested), VMs) and display
-it in Homepage.
+Let me know if you’d like to generate a Postman collection or add usage examples for Docker deployment or systemd auto-start!
+```
